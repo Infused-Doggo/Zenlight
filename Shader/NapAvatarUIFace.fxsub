@@ -1,0 +1,563 @@
+shared texture StencilRenderMask : RENDERCOLORTARGET;
+///////////////////////////////////////////////////////////////////////////////////////////////
+sampler DefSampler : register(s0);
+//============================================================================//
+//  Base Structure  :
+struct vs_in
+{
+	float3 v0 : POSITION0;
+	float3 v1 : NORMAL0;
+	float4 v2 : TEXCOORD3; // TANGENT0
+	float4 v3 : TEXCOORD2; // COLOR0
+	float4 v4 : TEXCOORD0;
+	float4 v5 : TEXCOORD1;
+	float4 v6 : TEXCOORD2;
+	float4 v7 : TEXCOORD0; // TEXCOORD3
+	float3 v8 : POSITION0; // TEXCOORD4
+};
+struct vs_out
+{
+	float4 o0 : TEXCOORD0;
+	float4 o1 : TEXCOORD1;
+	float4 o2 : TEXCOORD2;
+	float4 o3 : TEXCOORD3;
+	float4 o4 : TEXCOORD4;
+	float4 o5 : TEXCOORD5;
+	float4 o6 : TEXCOORD6;
+	float4 o7 : TEXCOORD7;
+	float4 o8 : TEXCOORD8;
+	float3 o9 : TEXCOORD9;
+	float4 o10 : SV_POSITION0;
+};
+//============================================================================//
+//  Vertex Shader(s)  :
+vs_out vs_model (vs_in i)
+{
+    vs_out o = (vs_out)0;
+	
+  float3 v0 = i.v0;
+  float3 v1 = i.v1;
+  float4 v2 = i.v2;
+  float4 v3 = i.v3;
+  float4 v4 = i.v4;
+  float4 v5 = float4(0, 1, 0, 0) - i.v5;
+  float4 v6 = i.v6;
+  float4 v7 = i.v7;
+  float3 v8 = i.v8;
+	
+  float4 r0,r1,r2,r3,r4,r5,r6,r7,r8;
+  #include "Shader/Common.fxh"
+  
+  _MiddlePointPosition = float4(LightDirection.zyx*36, 1);
+
+  r0.xyz = mul( v0, (float3x3)unity_ObjectToWorld );
+  r1.xyzw = mul( float4(r0.xyz, 1), unity_MatrixVP );
+  r2.x = _ClipSpaceXOffset * r1.w;
+  r2.y = _ClipSpaceYOffset * r1.w;
+  o.o10.xy = r2.xy + r1.xy;
+  r2.xyz = mul( v1, (float3x3)unity_ObjectToWorld );
+  r0.w = dot(r2.xyz, r2.xyz);
+  r0.w = max(1.17549435e-38, r0.w);
+  r0.w = rsqrt(r0.w);
+  o.o2.xyz = r2.xyz * r0.www;
+  o.o3.xyz = _WorldSpaceCameraPos.xyz + -r0.xyz;
+  r0.w = cmp(0 < int(_RenderedEntityCount));
+  r1.x = cmp(256 >= int(_RenderedEntityCount));
+  r0.w = r0.w ? r1.x : 0;
+  
+  if (r0.w != 0) {
+  } else {
+  }
+    r2.xyz = float3(0,0,0);
+
+  r2.xyz = -_MiddlePointPosition.xyz + r2.xyz;
+  r1.x = dot(r2.xyz, r2.xyz);
+  r1.x = rsqrt(r1.x);
+  r2.xyz = r2.xyz * r1.xxx;
+  r1.x = dot(-unity_ObjectToWorld._m00_m10_m20, -unity_ObjectToWorld._m00_m10_m20);
+  r1.x = max(1.17549435e-38, r1.x);
+  r1.x = rsqrt(r1.x);
+  r3.xyz = -unity_ObjectToWorld._m00_m10_m20 * r1.xxx;
+  r1.x = dot(unity_ObjectToWorld._m01_m11_m21, unity_ObjectToWorld._m01_m11_m21);
+  r1.x = max(1.17549435e-38, r1.x);
+  r1.x = rsqrt(r1.x);
+  r1.xy = unity_ObjectToWorld._m01_m21 * r1.xx;
+  r2.w = dot(r3.xyz, r2.xyz);
+  r2.w = 0.5 * abs(r2.w);
+  r2.xz = r2.ww * r1.xy + r2.xz;
+  r1.x = dot(r2.xyz, r2.xyz);
+  r1.x = rsqrt(r1.x);
+  r2.xz = r2.xz * r1.xx;
+  r2.y = 9.99999975e-06;
+  r1.x = dot(r2.xyz, r2.xyz);
+  r1.x = rsqrt(r1.x);
+  r2.xyz = r2.xyz * r1.xxx;
+  r3.xyz = mul( r2.xyz, (float3x3)unity_ObjectToWorld );
+  r1.x = dot(r2.xyz, r2.xyz);
+  r1.x = rsqrt(r1.x);
+  r1.xy = r2.zy * r1.xx;
+  r2.x = min(abs(r1.x), abs(r1.y));
+  r2.y = max(abs(r1.x), abs(r1.y));
+  r2.y = 1 / r2.y;
+  r2.x = r2.x * r2.y;
+  r2.y = r2.x * r2.x;
+  r2.z = r2.y * 0.0208350997 + -0.0851330012;
+  r2.z = r2.y * r2.z + 0.180141002;
+  r2.z = r2.y * r2.z + -0.330299497;
+  r2.y = r2.y * r2.z + 0.999866009;
+  r2.z = r2.x * r2.y;
+  r2.w = cmp(abs(r1.y) < abs(r1.x));
+  r2.z = r2.z * -2 + 1.57079637;
+  r2.z = r2.w ? r2.z : 0;
+  r2.x = r2.x * r2.y + r2.z;
+  r2.y = cmp(r1.y < -r1.y);
+  r2.y = r2.y ? -3.141593 : 0;
+  r2.x = r2.x + r2.y;
+  r2.y = min(-r1.x, r1.y);
+  r1.x = max(-r1.x, r1.y);
+  r1.y = cmp(r2.y < -r2.y);
+  r1.x = cmp(r1.x >= -r1.x);
+  r1.x = r1.x ? r1.y : 0;
+  r1.x = r1.x ? -r2.x : r2.x;
+  r2.y = LightDirection.x;
+  r1.y = 255 * v3.z;
+  r1.y = (int)r1.y;
+  r3.xy = (int2)r1.yy && int2(16,3);
+  r1.x = cmp(0 < r1.x);
+  r4.y = -r2.y;
+  r2.x = 1 + -v4.x;
+  r2.z = v7.y;
+  r4.x = v4.x;
+  r4.z = v7.x;
+  r2.xyz = r1.xxx ? r2.xyz : r4.xyz;
+  
+  r3.yz = (int2)r3.xy;
+  o.o6.z = -r3.z * 0.200000003 + 0.899999976;
+
+  r0.xyz = mul( v0, (float3x3)unity_ObjectToWorld );
+  
+  o.o4 = float4(r0.xyz, 1);
+  o.o10.zw = mul( float4(r0.xyz, 1), unity_MatrixVP ).zw;
+
+  o.o7.xyzw = o.o10;
+  
+  
+  o.o6.xyw = float3(1, 1, 1);
+  
+  o.o0.xy = v4.xy;
+  o.o0.zw = r2.xy;
+  o.o1.xyzw = float4(0,0,0,0);
+  
+  o.o1.xy = v6.xy;
+  o.o1.zw = float2(0,0);
+    return o;
+}
+
+// ピクセルシェーダ
+float4 ps_model(vs_out i, int v11 : VFACE) : COLOR0
+{
+	#include "Shader/Common.fxh"
+	float4x4 Frame = CTF(i.o2.xyz, i.o3, float4(i.o0.xy, 0, 0));
+	float4 v0 = i.o0; //dont
+	float4 v1 = i.o1; //dont
+	float4 v2 = i.o2; //dont
+	float4 v3 = i.o3; //dont
+	float4 v4 = i.o4; //dont
+	float4 v5 = float4(0.1, -1, 0.3, 2.6); //i.o5
+	float4 v6 = float4(0.1, -1, i.o6.z, 2.6);
+	float4 v7 = float4(1, 1, 1, 1); //i.o7
+	float4 v8 = float4(0.05, 16, 0, 0); //i.o8
+	float3 v9 = float3(0, 0, 0); //i.o9
+	float4 v10 = 1;
+	float4 o0;
+	
+	float4 r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14,r15;
+	
+  r0.xyzw = tex2D( MainTex_s, v0.xy).xyzw;
+  r1.xyzw = _Color.xyzw * r0.xyzw;
+  r2.xyz = tex2D( LightTex_s, v0.zy).xyw;
+  r0.w = (0.5 < v8.y);
+  r3.x = r0.w ? r2.x : v8.z;
+  r2.x = (0.400000006 < r2.y);
+  r2.w = (r2.y < 0.949999988);
+  r2.x = r2.w ? r2.x : 0;
+  r2.w = tex2D( LightTex_s, v0.xy).y;
+  r2.x = r2.x ? r2.y : r2.w;
+  r0.w = r0.w ? r2.z : 1;
+  r2.y = dot(v2.xyz, v2.xyz);
+  r2.y = rsqrt(r2.y);
+  r2.yzw = v2.xyz * r2.yyy;
+  r3.z = (0.5 < _UseOverlayTex);
+  r4.xy = _OverlayTexScale * v0.xy;
+  r4.xyz = tex2D( OverlayTex_s, r4.xy).xyz;
+  r0.xyz = r0.xyz * _Color.xyz + r4.xyz;
+  r0.xyz = float3(-0.5,-0.5,-0.5) + r0.xyz;
+  r0.xyz = max(float3(0,0,0), r0.xyz);
+  r0.xyz = r3.zzz ? r0.xyz : r1.xyz;
+  r1.x = dot(v3.xyz, v3.xyz);
+  r1.x = max(1.17549435e-38, r1.x);
+  r1.x = rsqrt(r1.x);
+  r1.xyz = v3.xyz * r1.xxx;
+  r3.z = dot(_HeadMatrixWS2OS0.xyz, r1.xyz);
+  r3.w = dot(_HeadMatrixWS2OS1.xyz, r1.xyz);
+  r3.z = 0.850000024 + r3.z;
+  r3.z = saturate(1.33333337 * r3.z);
+  r4.x = r3.z * -2 + 3;
+  r3.z = r3.z * r3.z;
+  r3.z = r4.x * r3.z;
+  r4.x = -_NoseLineLkDnDisp + _NoseLineHoriDisp;
+  r3.z = r3.z * r4.x + _NoseLineLkDnDisp;
+  r4.xy = (v6.zz < float2(0.600000024,0.800000012));
+  r5.xyz = r4.yyy ? _OutlineColor2.xyz : _OutlineColor.xyz;
+  r5.xyz = r4.xxx ? _OutlineColor3.xyz : r5.xyz;
+  r4.z = (r0.y >= r0.z);
+  r4.z = r4.z ? 1.000000 : 0;
+  r6.xy = r0.zy;
+  r6.zw = float2(-1,0.666666687);
+  r7.xy = -r6.xy + r0.yz;
+  r7.zw = float2(1,-1);
+  r6.xyzw = r4.zzzz * r7.xyzw + r6.xyzw;
+  r4.z = (r0.x >= r6.x);
+  r4.z = r4.z ? 1.000000 : 0;
+  r7.xyz = r6.xyw;
+  r7.w = r0.x;
+  r6.xyw = r7.wyx;
+  r6.xyzw = r6.xyzw + -r7.xyzw;
+  r6.xyzw = r4.zzzz * r6.xyzw + r7.xyzw;
+  r4.z = min(r6.w, r6.y);
+  r4.z = r6.x + -r4.z;
+  r4.w = r6.w + -r6.y;
+  r5.w = r4.z * 6 + 9.99999975e-05;
+  r4.w = r4.w / r5.w;
+  r4.w = r6.z + r4.w;
+  r5.w = 9.99999975e-05 + r6.x;
+  r4.z = r4.z / r5.w;
+  r5.w = r6.x + -r4.z;
+  r5.w = 1 + r5.w;
+  r5.w = r5.w * -0.200000003 + 0.800000012;
+  r5.w = r5.w * r6.x;
+  r6.xyz = float3(1,0.666666687,0.333333343) + abs(r4.www);
+  r6.xyz = frac(r6.xyz);
+  r6.xyz = r6.xyz * float3(6,6,6) + float3(-3,-3,-3);
+  r6.xyz = saturate(float3(-1,-1,-1) + abs(r6.xyz));
+  r6.xyz = float3(-1,-1,-1) + r6.xyz;
+  r6.xyz = r4.zzz * r6.xyz + float3(1,1,1);
+  r6.xyz = r6.xyz * r5.www;
+  r7.xyz = r6.xyz * r5.xyz;
+  r5.xyz = -r5.xyz * r6.xyz + float3(1,1,1);
+  r5.xyz = r1.www * r5.xyz + r7.xyz;
+  r3.z = r3.w + -r3.z;
+  r3.z = saturate(50 * r3.z);
+  r3.w = r3.z * -2 + 3;
+  r3.z = r3.z * r3.z;
+  r1.w = r3.w * r3.z + -r1.w;
+  r1.w = (r1.w >= 0);
+  r1.w = r1.w ? 1.000000 : 0;
+  r5.xyz = float3(-1,-1,-1) + r5.xyz;
+  r5.xyz = r1.www * r5.xyz + float3(1,1,1);
+  r6.xyz = r5.xyz * r0.xyz;
+  r1.w = (0 < int(_RenderedEntityCount));
+  r3.z = (256 >= int(_RenderedEntityCount));
+  r1.w = r1.w ? r3.z : 0;
+  
+  if (r1.w != 0) {
+  } else {
+  }
+    r9.xyz = float3(0,0,0);
+    r7.xy = float2(0,0);
+    r3.z = 0;
+    r8.xyz = -LightDirection * 36.81456;
+	
+  r8.xyz = -v4.xyz + r8.xyz;
+  r3.w = dot(r8.xyz, r8.xyz);
+  r3.w = max(1.17549435e-38, r3.w);
+  r4.z = rsqrt(r3.w);
+  r10.xyz = r8.xyz * r4.zzz;
+  r4.w = r7.x * r7.x;
+  r3.w = r3.w / r4.w;
+  r3.w = 1 + -r3.w;
+  r3.w = max(0, r3.w);
+  r7.xzw = -_AvatarMainLightColor.xyz + r9.xyz;
+  r7.xzw = r3.www * r7.xzw + _AvatarMainLightColor.xyz;
+  r4.w = -1 + r3.w;
+  r3.w = r3.w * r4.w + 1;
+  r4.w = cmp(0.5 < _is_main_light_shadows_on);
+
+  if (r4.w != 0) {
+  } else {
+  }
+  
+  if (r4.w || HgShadow_Valid) {
+    float comp = HgShadow_GetSelfShadowRate(v7);
+    r5.w = comp;
+    r3.z = comp;
+  } else {
+    r5.w = 1;
+    r3.z = 1;
+  }
+
+  r4.w = int(_OverrideMainLight);
+  r4.w = cmp(0.5 < r4.w);
+  r8.xyz = r8.xyz * r4.zzz + -_OverrideMainLightBody.xyz;
+  r8.xyz = r0.www * r8.xyz + _OverrideMainLightBody.xyz;
+  r4.z = dot(r8.xyz, r8.xyz);
+  r4.z = rsqrt(r4.z);
+  r8.xyz = r8.xyz * r4.zzz;
+  r8.xyz = r4.www ? r8.xyz : r10.xyz;
+  r4.z = cmp(_AmbientGradientShape.w != 0.000000);
+  r4.w = dot(_AmbientGradientShape.xyz, v4.xyz);
+  r4.w = saturate(-_AmbientGradientShape.w + r4.w);
+  r9.xyz = _AmbientGradientColor.xyz * r7.xzw;
+  r10.xyz = _AmbientGradientColor.xyz + r7.xzw;
+  r10.xyz = -r7.xzw * _AmbientGradientColor.xyz + r10.xyz;
+  r9.xyz = _AmbientGradientColor.www * r10.xyz + r9.xyz;
+  r9.xyz = r9.xyz + -r7.xzw;
+  r9.xyz = r4.www * r9.xyz + r7.xzw;
+  r7.xyz = r4.zzz ? r9.xyz : r7.xzw;
+  r4.z = -0.5 + r2.x;
+  r4.z = saturate(2.5 * r4.z);
+  r4.w = 0.0250000004 + -_AlbedoSmoothness;
+  r4.z = r4.z * r4.w + _AlbedoSmoothness;
+  r4.w = cmp(0.949999988 >= r2.x);
+  r4.w = r4.w ? 1.000000 : 0;
+  r4.z = r4.z * r4.w;
+  r2.x = cmp(r2.x >= 0.400000006);
+  r2.x = r2.x ? 1.000000 : 0;
+  r2.x = r4.z * r2.x;
+  r2.x = max(9.99999975e-06, r2.x);
+  r9.yw = rcp(r2.xx);
+  r4.z = cmp(0.5 < _IsStencilReceiverPass);
+  r3.y = v0.w;
+  r3.xy = r4.zz ? float2(0,1) : r3.xy;
+  r3.x = r3.x * 1.20000005 + -0.600000024;
+  r4.z = r2.x * 4 + 1;
+  r3.x = r3.x / r4.z;
+  r10.x = 0.600000024 + r3.x;
+  r10.y = r10.x + -r2.x;
+  r10.z = -r2.x * 2 + r10.x;
+  r11.xyzw = -r10.xyyz + r3.yyyy;
+  r9.xz = -r9.ww;
+  r9.xyzw = saturate(r11.xyzw * r9.xyzw);
+  r10.w = -0.125 + r10.z;
+  r3.xy = -r10.zw + r3.yy;
+  r10.zw = saturate(float2(-8,8) * r3.xy);
+  r2.x = saturate(r3.z * -2 + 1);
+
+  if (r1.w != 0) {
+  } else {
+  }
+    r3.x = 1;
+
+  r10.x = min(r9.x, r9.w);
+  r10.y = min(r10.w, r9.z);
+  r2.x = -r2.x * r3.x + 1;
+  
+  if (r1.w != 0) {
+  } else {
+  }
+    r3.x = 1;
+	
+  r2.x = r3.x * r2.x;
+  r3.x = -r9.y * r2.x + r9.y;
+  r9.xzw = r10.yxz * r2.xxx;
+  r11.xyz = -r10.xyz * r2.xxx + r10.xyz;
+  r3.y = r11.x + r11.y;
+  r3.y = r3.y + r11.z;
+  r3.y = r9.y * r2.x + r3.y;
+  r4.z = v8.x * r3.x;
+  r4.w = -r3.x * v8.x + r3.x;
+  r6.w = cmp(r0.w < 0.99000001);
+  if (r6.w != 0) {
+    r6.w = max(9.99999975e-06, _AlbedoSmoothness);
+    r7.w = rcp(r6.w);
+    r8.w = dot(r2.yzw, r8.xyz);
+    r8.w = 1 + r8.w;
+    r9.y = 3 * r8.y;
+    r9.y = min(1, r9.y);
+    r9.y = -r9.y * 0.5 + r2.z;
+    r9.y = saturate(1.5 + r9.y);
+    r11.xyz = r8.www * r9.yyy + float3(-1,-0.666700006,-1.33329999);
+    r8.w = -r6.w * 3 + 2;
+    r8.w = 3 / r8.w;
+    r12.yz = r6.ww * float2(0.5,1.5) + float2(-0.333299994,0.333299994);
+    r12.x = -1;
+    r12.xyz = -r12.xyz + r11.xxx;
+    r13.xyw = r12.xyz * r8.www;
+    r12.xyz = -r12.xyz * r8.www + float3(1,1,1);
+    r11.xyz = r11.yzz * r7.www + float3(0.5,0.5,-0.5);
+    r14.xyz = float3(1,1,1) + -r11.xyz;
+    r15.yw = min(r14.xy, r13.xy);
+    r13.xz = min(r12.yz, r11.xz);
+    r15.x = r12.x;
+    r15.z = r13.x;
+    r15.xyz = saturate(r15.xyz);
+    r13.y = saturate(min(r14.z, r11.y));
+    r13.x = saturate(r15.w);
+    r13.zw = saturate(r13.zw);
+    r11.xyzw = r3.zzzz * float4(-2,2,2,-2) + float4(1,0,-1,2);
+    r11.y = saturate(min(r11.y, r11.w));
+    r11.xz = saturate(r11.xz);
+	
+    if (r1.w != 0) {
+    } else {
+    }
+      r6.w = 1;
+	
+    r11.xw = r11.xy * r6.ww;
+    r7.w = 1 + -r15.x;
+    r7.w = r7.w + -r15.y;
+    r7.w = r7.w + -r15.z;
+    r7.w = r11.x * r7.w + r15.z;
+    r6.w = r11.y * r6.w + r11.z;
+    r11.xy = r13.xy * r6.ww;
+    r6.w = r13.z + r13.w;
+    r6.w = r6.w * r11.w + r11.y;
+    r11.yz = r13.zw * r11.zz;
+    r8.w = v8.x * r15.x;
+    r9.y = -r15.x * v8.x + r15.x;
+    r9.y = r15.y + r9.y;
+    r10.x = r10.x * r2.x + -r6.w;
+    r9.z = r0.w * r10.x + r6.w;
+    r10.xy = r10.yz * r2.xx + -r11.yz;
+    r10.xy = r0.ww * r10.xy + r11.yz;
+    r2.x = r3.x * v8.x + -r8.w;
+    r4.z = r0.w * r2.x + r8.w;
+    r2.x = -r9.y + r4.w;
+    r4.w = r0.w * r2.x + r9.y;
+    r2.x = -r7.w + r3.y;
+    r3.y = r0.w * r2.x + r7.w;
+    r2.x = r0.w * -r11.x + r11.x;
+    r9.xw = r10.xy;
+  } else {
+    r2.x = 0;
+  }
+  r10.xyz = r4.yyy ? _ShallowColor2.xyz : _ShallowColor.xyz;
+  r10.xyz = r4.xxx ? _ShallowColor3.xyz : r10.xyz;
+  r11.xyz = r4.yyy ? _ShadowColor2.xyz : _ShadowColor.xyz;
+  r11.xyz = r4.xxx ? _ShadowColor3.xyz : r11.xyz;
+  r12.y = saturate(0.437249988 * v10.w);
+  r12.x = -r12.y;
+  r12.xy = float2(1,0) + r12.xy;
+  r10.xyz = float3(6.10351562e-05,6.10351562e-05,6.10351562e-05) + r10.xyz;
+  r3.x = r10.x + r10.y;
+  r3.x = r3.x + r10.z;
+  r3.x = 0.333330005 * r3.x;
+  r13.xyz = saturate(r10.xyz / r3.xxx);
+  r10.xyz = r10.xyz * r12.yyy;
+  r10.xyz = r13.xyz * r12.xxx + r10.xyz;
+  r11.xyz = float3(6.10351562e-05,6.10351562e-05,6.10351562e-05) + r11.xyz;
+  r3.x = r11.x + r11.y;
+  r3.x = r3.x + r11.z;
+  r3.x = 0.333330005 * r3.x;
+  r13.xyz = saturate(r11.xyz / r3.xxx);
+  r11.xyz = r11.xyz * r12.yyy;
+  r11.xyz = r13.xyz * r12.xxx + r11.xyz;
+  r12.xyz = _PostShallowTint.xyz * r10.xyz;
+  r10.xyz = _PostShallowFadeTint.xyz * r10.xyz;
+  r13.xyz = _PostShadowTint.xyz * r11.xyz;
+  r11.xyz = _PostShadowFadeTint.xyz * r11.xyz;
+  r3.x = max(r7.x, r7.y);
+  r3.x = max(r3.x, r7.z);
+  r6.w = cmp(r3.x == 0.000000);
+  r7.w = max(0.00999999978, r3.x);
+  r7.w = rcp(r7.w);
+  r6.w = r6.w ? 0 : r7.w;
+  
+  if (r1.w != 0) {
+  } else {
+  }
+    r7.w = 0;
+
+  r8.w = 1 + -r3.w;
+  r3.w = r7.w * r8.w + r3.w;
+  r7.xyz = r7.xyz * r3.www;
+  r3.x = cmp(1 < r3.x);
+  r3.x = r3.x ? r6.w : 1;
+  r14.xyz = r7.xyz * r3.xxx;
+  r13.xyz = r13.xyz * r4.www;
+  r11.xyz = r11.xyz * r4.zzz + r13.xyz;
+  r3.xyw = r10.xyz * r3.yyy + r11.xyz;
+  r3.xyw = r12.xyz * r2.xxx + r3.xyw;
+  r10.xyz = _PostFrontTint.xyz * r9.xxx;
+  r9.xyz = _PostSssTint.xyz * r9.zzz + r10.xyz;
+  r9.xyz = r9.xyz + r9.www;
+  r7.xyz = r9.xyz * r7.xyz;
+  r3.xyw = r14.xyz * r3.xyw + r7.xyz;
+  r2.x = 1 + -_Color.w;
+  r0.w = r2.x * r0.w;
+  r0.w = r0.w * 5 + 1;
+  r7.xyz = r3.xyw * r0.www;
+  r2.x = dot(r6.xyz, float3(0.289999992,0.600000024,0.109999999));
+  r2.x = r2.x * 0.287499994 + 1.4375;
+  r4.z = dot(r8.xyz, r2.yzw);
+  r4.w = dot(r8.xyz, v2.xyz);
+  r6.w = r4.w + -r4.z;
+  r6.w = saturate(-r6.w * 3 + 1);
+  r7.w = r6.w + r6.w;
+  r6.w = sqrt(r6.w);
+  r6.w = r7.w * r6.w;
+  r6.w = min(1, r6.w);
+  r7.w = r4.z * 0.5 + 0.5;
+  r4.zw = saturate(r4.zw);
+  r6.w = r7.w * r6.w + -r4.z;
+  r6.w = r6.w * 0.5 + r4.z;
+  r7.w = max(r6.y, r6.z);
+  r7.w = max(r7.w, r6.x);
+  r8.w = cmp(1 < r7.w);
+  r9.xyz = r6.xyz / r7.www;
+  r9.xyz = r8.www ? r9.xyz : r6.xyz;
+  r7.w = 1 + -r2.x;
+  r2.x = r6.w * r7.w + r2.x;
+  r9.xyz = log2(r9.xyz);
+  r9.xyz = r9.xyz * r2.xxx;
+  r9.xyz = exp2(r9.xyz);
+  r0.xyz = -r0.xyz * r5.xyz + r9.xyz;
+  r0.xyz = r0.xyz * float3(0.5,0.5,0.5) + r6.xyz;
+  r5.xyz = r9.xyz + -r0.xyz;
+  r0.xyz = r4.www * r5.xyz + r0.xyz;
+  r5.xyz = float3(0.959999979,0.959999979,0.959999979) * r0.xyz;
+  r2.x = cmp(0.850000024 < v6.z);
+  r6.xyz = v9.xyz * r5.xyz;
+  r6.xyz = r5.xyz * r7.xyz + r6.xyz;
+  o0.xyz = _CharacterAmbient.xyz * r0.xyz + r6.xyz;
+  o0.w = 1;
+  return o0;
+}
+
+void LightSourceShadowlessPS(out float4 oColor0 : COLOR0)
+{
+
+	oColor0 = float4(0.5, 0.5, 0.5, 0.5);
+}
+
+
+
+technique MainTecBS1  < string MMDPass = "object_ss"; > {
+    pass DrawObject {
+		CULLMODE = 1;
+        VertexShader = compile vs_3_0 vs_model();
+        PixelShader  = compile ps_3_0 ps_model();
+    }
+}
+
+technique MainTecBS0  <string MMDPass = "object_ss";
+	string Script = 
+		"RenderColorTarget0=StencilRenderMask;"
+		"Pass=DrawObject2;"
+;>{
+	pass DrawObject {
+		CULLMODE = 1;
+        VertexShader = compile vs_3_0 vs_model();
+        PixelShader  = compile ps_3_0 ps_model();
+    }
+	
+	pass DrawObject2 {	
+        VertexShader = compile vs_3_0 vs_model();
+        PixelShader  = compile ps_3_0 LightSourceShadowlessPS();
+    }
+}
+
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTech<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}
+///////////////////////////////////////////////////////////////////////////////////////////////

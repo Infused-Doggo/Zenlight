@@ -1,0 +1,748 @@
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+sampler DefSampler : register(s0);
+//============================================================================//
+//  Base Structure  :
+struct vs_in
+{
+	float3 v0 : POSITION0;
+	float3 v1 : NORMAL0;
+	float4 v2 : TANGENT0;
+	float4 v3 : COLOR0;
+	float4 v4 : TEXCOORD0;
+	float4 v5 : TEXCOORD1;
+	float4 v6 : TEXCOORD2;
+	float4 v7 : TEXCOORD3;
+	float3 v8 : TEXCOORD4;
+};
+struct vs_out
+{
+	float4 o0 : TEXCOORD0;
+	float4 o1 : TEXCOORD1;
+	float4 o2 : TEXCOORD2;
+	float4 o3 : TEXCOORD3;
+	float4 o4 : TEXCOORD4;
+	float4 o5 : TEXCOORD5;
+	float4 o6 : TEXCOORD6;
+	float4 o7 : TEXCOORD7;
+	float4 o8 : TEXCOORD8;
+	float3 o9 : TEXCOORD9;
+	float4 o10 : SV_POSITION0;
+};
+//============================================================================//
+//  Vertex Shader(s)  :
+vs_out vs_model (vs_in i)
+{
+    vs_out o = (vs_out)0;
+	
+  float3 v0 = i.v0;
+  float3 v1 = i.v1;
+  float4 v2 = i.v2;
+  float4 v3 = i.v3;
+  float4 v4 = i.v4;
+  float4 v5 = i.v5;
+  float4 v6 = i.v6;
+  float4 v7 = i.v7;
+  float3 v8 = i.v8;
+	
+  float4 r0,r1,r2,r3,r4,r5,r6,r7,r8;
+  #include "Shader/Common.fxh"
+
+  r0.xyz = mul( v0, (float3x3)unity_ObjectToWorld );
+  o.o10.xyzw = mul( float4(r0.xyz, 1), unity_MatrixVP );
+  o.o2.xyzw = float4(v0.xyz, 1);
+  o.o3.xyzw = float4(v1.xyz, 1);
+  o.o7.xyzw = o.o10;
+  o.o0.xy = v4.xy;
+  o.o0.zw = v7.xy;
+  o.o1.xy = v6.xy;
+  o.o1.zw = float2(0,0);
+    return o;
+}
+
+float4 ps_model(vs_out i, int v11 : VFACE) : COLOR0
+{	
+	float4 _r2,_r1,_r5,_r6;
+	#include "Shader/Common.fxh"
+	float4x4 Frame = CTF(i.o2.xyz, i.o3, float4(i.o0.xy, 0, 0));
+	float4 v0 = i.o0;
+	float4 v2 = float4(Frame[2].xyz, i.o2.x);
+	float4 v3 = float4(Frame[0].xyz, i.o2.y);
+	float4 v4 = float4(Frame[1].xyz, i.o2.z);
+	float4 v7 = i.o7;
+	float4 v8 = float4(1, 1, 1, 1)-1;
+	float4 v9 = float4(1, 1, 1, 1.0)-1;
+	float4 v10 = 1;
+	float4 o0;
+	
+	float4 r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14,r15,r16,r17,r18,r19;
+	
+  r0.x = v11.x ? 1 : -1;
+  r0.y = (0.5 < _DoubleSided);
+  r0.z = ((int)v11.x == 0);
+  r0.y = r0.z ? r0.y : 0;
+  r0.z = (0.5 < _SymmetryUV);
+  r0.w = (1 < v0.z);
+  r0.z = r0.w ? r0.z : 0;
+  r0.z = (int)r0.z || (int)r0.y;
+  r0.zw = r0.zz ? v0.zw : v0.xy;
+  r1.xyz = tex2D( MainTex_s, r0.zw).xyz;
+  r2.xyz = _Color.xyz * r1.xyz;
+  r0.yz = r0.yy ? v0.zw : v0.xy;
+  r3.xyz = tex2D( LightTex_s, r0.yz).xyz;
+  r3.xyz = r3.xyz * float3(2,2,2) + float3(-1.00399995,-1.00399995,-1);
+  r3.xy = _BumpScale * r3.xy;
+  r0.w = dot(r3.xy, r3.xy);
+  r0.w = min(1, r0.w);
+  r0.w = 1 + -r0.w;
+  r0.w = sqrt(r0.w);
+  r0.x = r0.w * r0.x;
+  r4.xyz = v4.xyz * r3.yyy;
+  r3.xyw = r3.xxx * v3.xyz + r4.xyz;
+  r3.xyw = r0.xxx * v2.xyz + r3.xyw;
+  r0.x = dot(r3.xyw, r3.xyw);
+  r0.x = rsqrt(r0.x);
+  r4.xyz = r3.xyw * r0.xxx;
+  r3.xyw = tex2D( OtherDataTex_s, r0.yz).zxy;
+  r0.x = _Metallic * r3.w;
+  r0.yz = tex2D( OtherDataTex2_s, r0.yz).yz;
+  r5.xy = (float2(0.5,0.5) < float2(_Emission, _UseMatCapMask));
+  r0.w = r5.y ? r5.x : 0;
+  r1.w = -0.200000003 + r0.z;
+  r1.w = saturate(1.25 * r1.w);
+  r1.w = r0.w ? r1.w : r0.z;
+  r1.w = r5.x ? r1.w : 0;
+  r2.w = (0.5 < _UseOverlayTex);
+  r5.xy = _OverlayTexScale * v0.xy;
+  r5.xyz = tex2D( OverlayTex_s, r5.xy).xyz;
+  r1.xyz = r1.xyz * _Color.xyz + r5.xyz;
+  r1.xyz = float3(-0.5,-0.5,-0.5) + r1.xyz;
+  r1.xyz = max(float3(0,0,0), r1.xyz);
+  r1.xyz = r2.www ? r1.xyz : r2.xyz;
+			if (_UseChannelMixer) {
+  _r2.xy = (float2(0.5,0.5) < _SymmetryUV) ? v0.zw : v0.xy;
+  _r2.xyzw = tex2D( ChannelMixTex_s, _r2.xy).xyzw;
+  _r1.xyz = sqrt(r1.xyz);
+  _r5.xyz = -_RChannelColorPrecomputed.xyz + _r1.xyz;
+  _r5.xyz = max(float3(0,0,0), _r5.xyz);
+  _r5.xyz = _r5.xyz + -_r1.xyz;
+  _r5.xyz = _r2.xxx * _r5.xyz + _r1.xyz;
+  _r6.xyz = -_GChannelColorPrecomputed.xyz + _r1.xyz;
+  _r6.xyz = max(float3(0,0,0), _r6.xyz);
+  _r6.xyz = _r6.xyz + -_r5.xyz;
+  _r5.xyz = _r2.yyy * _r6.xyz + _r5.xyz;
+  _r6.xyz = -_BChannelColorPrecomputed.xyz + _r1.xyz;
+  _r6.xyz = max(float3(0,0,0), _r6.xyz);
+  _r6.xyz = _r6.xyz + -_r5.xyz;
+  _r2.xyz = _r2.zzz * _r6.xyz + _r5.xyz;
+  _r1.xyz = -_AChannelColorPrecomputed.xyz + _r1.xyz;
+  _r1.xyz = max(float3(0,0,0), _r1.xyz);
+  _r1.xyz = _r1.xyz + -_r2.xyz;
+  _r1.xyz = _r2.www * _r1.xyz + _r2.xyz;
+  _r2.xyz = _r1.xyz * _r1.xyz;
+  }
+  r2.x = v2.w;
+  r2.y = v3.w;
+  r2.z = v4.w;
+  r5.xyz = _WorldSpaceCameraPos.xyz + -r2.xyz;
+  r2.w = dot(r5.xyz, r5.xyz);
+  r3.w = max(1.17549435e-38, r2.w);
+  r3.w = rsqrt(r3.w);
+  r6.xyz = r5.xyz * r3.www;
+  r5.w = (0 < int(_RenderedEntityCount));
+  r6.w = (256 >= int(_RenderedEntityCount));
+  r5.w = r5.w ? r6.w : 0;
+  
+  if (r5.w != 0) {
+  } else {
+  }
+    r9.xyz = float3(0,0,0);
+    r7.xy = float2(0,0);
+    r6.w = 0;
+    r8.xyz = -LightDirection * 36.81456;
+	
+  r8.xyz = r8.xyz + -r2.xyz;
+  r7.z = dot(r8.xyz, r8.xyz);
+  r7.z = max(1.17549435e-38, r7.z);
+  r7.w = rsqrt(r7.z);
+  r8.xyz = r8.xyz * r7.www;
+  r7.x = r7.x * r7.x;
+  r7.x = r7.z / r7.x;
+  r7.x = 1 + -r7.x;
+  r7.x = max(0, r7.x);
+  r9.xyz = -_AvatarMainLightColor.xyz + r9.xyz;
+  r9.xyz = r7.xxx * r9.xyz + _AvatarMainLightColor.xyz;
+  r7.z = -1 + r7.x;
+  r7.x = r7.x * r7.z + 1;
+  r7.z = (0.5 < _is_main_light_shadows_on);
+  
+  if (r7.z != 0) {
+  } else {
+  }
+  
+  if (r7.z || HgShadow_Valid) {
+    float comp = HgShadow_GetSelfShadowRate(v7);
+    r7.w = comp;
+    r6.w = comp;
+  } else {
+    r7.w = 1;
+    r6.w = 1;
+  }
+	
+  r7.y = int(_OverrideMainLight);
+  r7.y = (0.5 < r7.y);
+  r7.z = (v8.z < 0.5);
+  r10.xyz = r7.zzz ? _OverrideMainLightBody.xyz : _OverrideMainLightHair.xyz;
+  r8.xyz = r7.yyy ? r10.xyz : r8.xyz;
+  r7.y = (_AmbientGradientShape.w != 0.000000);
+  r7.z = dot(_AmbientGradientShape.xyz, r2.xyz);
+  r7.z = saturate(-_AmbientGradientShape.w + r7.z);
+  r10.xyz = _AmbientGradientColor.xyz * r9.xyz;
+  r11.xyz = _AmbientGradientColor.xyz + r9.xyz;
+  r11.xyz = -r9.xyz * _AmbientGradientColor.xyz + r11.xyz;
+  r10.xyz = _AmbientGradientColor.www * r11.xyz + r10.xyz;
+  r10.xyz = r10.xyz + -r9.xyz;
+  r10.xyz = r7.zzz * r10.xyz + r9.xyz;
+  r9.xyz = r7.yyy ? r10.xyz : r9.xyz;
+  r7.y = max(9.99999975e-06, _AlbedoSmoothness);
+  r7.z = rcp(r7.y);
+  r8.w = dot(r4.xyz, r8.xyz);
+  r9.w = 1 + r8.w;
+  r10.x = 3 * r8.y;
+  r10.x = min(1, r10.x);
+  r10.x = -r10.x * 0.5 + r4.y;
+  r10.x = saturate(1.5 + r10.x);
+  r9.w = r9.w * r10.x + -1;
+  r9.w = r9.w + -r8.w;
+  r9.w = v8.y * r9.w + r8.w;
+  r3.z = r3.z * 2 + r9.w;
+  r9.w = -r7.y * 3 + 2;
+  r9.w = 3 / r9.w;
+  r10.yz = r7.yy * float2(0.5,1.5) + float2(-0.333299994,0.333299994);
+  r10.x = -1;
+  r10.xyz = -r10.xyz + r3.zzz;
+  r11.xyw = r10.xyz * r9.www;
+  r10.xyz = -r10.xyz * r9.www + float3(1,1,1);
+  r12.xyz = float3(0.333299994,-0.333299994,-0.333299994) + r3.zzz;
+  r12.xyz = r12.xyz * r7.zzz + float3(0.5,0.5,-0.5);
+  r13.xyz = float3(1,1,1) + -r12.xyz;
+  r14.xy = min(r13.yx, r11.yx);
+  r11.xz = min(r12.xz, r10.yz);
+  r14.z = r10.x;
+  r14.w = r11.x;
+  r10.xyz = saturate(r14.zyw);
+  r14.y = saturate(min(r13.z, r12.y));
+  r14.x = saturate(r14.x);
+  r11.zw = saturate(r11.zw);
+  r12.xyzw = r6.wwww * float4(-2,2,2,-2) + float4(1,0,-1,2);
+  r12.y = saturate(min(r12.y, r12.w));
+  r12.xz = saturate(r12.xz);
+  
+  if (r5.w != 0) {
+  } else {
+  }
+    r7.y = 1;
+	
+  r11.xy = r12.xy * r7.yy;
+  r7.z = 1 + -r10.x;
+  r7.z = r7.z + -r10.y;
+  r7.z = r7.z + -r10.z;
+  r7.z = r11.x * r7.z + r10.z;
+  r7.y = r12.y * r7.y + r12.z;
+  r10.zw = r14.xy * r7.yy;
+  r7.y = r11.z + r11.w;
+  r7.y = r7.y * r11.y + r10.w;
+  r9.w = r12.z * r11.z;
+  r10.w = v8.x * r10.x;
+  r10.x = -r10.x * v8.x + r10.x;
+  r10.x = r10.y + r10.x;
+  r13.xyzw = (r3.yyyy < float4(0.200000003,0.400000006,0.600000024,0.800000012));
+  r11.xyz = r13.www ? _ShallowColor2.xyz : _ShallowColor.xyz;
+  r11.xyz = r13.zzz ? _ShallowColor3.xyz : r11.xyz;
+  r11.xyz = r13.yyy ? _ShallowColor4.xyz : r11.xyz;
+  r11.xyz = r13.xxx ? _ShallowColor5.xyz : r11.xyz;
+  r12.xyw = r13.www ? _ShadowColor2.xyz : _ShadowColor.xyz;
+  r12.xyw = r13.zzz ? _ShadowColor3.xyz : r12.xyw;
+  r12.xyw = r13.yyy ? _ShadowColor4.xyz : r12.xyw;
+  r12.xyw = r13.xxx ? _ShadowColor5.xyz : r12.xyw;
+  r14.y = saturate(0.437249988 * v10.w);
+  r14.x = -r14.y;
+  r14.xy = float2(1,0) + r14.xy;
+  r11.xyz = float3(6.10351562e-05,6.10351562e-05,6.10351562e-05) + r11.xyz;
+  r10.y = r11.x + r11.y;
+  r10.y = r10.y + r11.z;
+  r10.y = 0.333330005 * r10.y;
+  r15.xyz = saturate(r11.xyz / r10.yyy);
+  r11.xyz = r11.xyz * r14.yyy;
+  r11.xyz = r15.xyz * r14.xxx + r11.xyz;
+  r12.xyw = float3(6.10351562e-05,6.10351562e-05,6.10351562e-05) + r12.xyw;
+  r10.y = r12.x + r12.y;
+  r10.y = r10.y + r12.w;
+  r10.y = 0.333330005 * r10.y;
+  r15.xyz = saturate(r12.xyw / r10.yyy);
+  r12.xyw = r12.xyw * r14.yyy;
+  r12.xyw = r15.xyz * r14.xxx + r12.xyw;
+  r14.xyz = _PostShallowTint.xyz * r11.xyz;
+  r11.xyz = _PostShallowFadeTint.xyz * r11.xyz;
+  r15.xyz = _PostShadowTint.xyz * r12.xyw;
+  r12.xyw = _PostShadowFadeTint.xyz * r12.xyw;
+  r16.xyz = float3(1.17549435e-38,1.17549435e-38,1.17549435e-38) + r9.xyz;
+  r10.y = max(r16.x, r16.y);
+  r10.y = max(r10.y, r16.z);
+  r10.y = rcp(r10.y);
+  
+  if (r5.w != 0) {
+  } else {
+  }
+    r14.w = 0;
+
+  r15.w = 1 + -r7.x;
+  r7.x = r14.w * r15.w + r7.x;
+  r9.xyz = r9.xyz * r7.xxx;
+  r7.x = min(1, r10.y);
+  r16.xyz = r9.xyz * r7.xxx;
+  r17.xyz = _PostFrontTint.xyz * r9.www;
+  r17.xyz = _PostSssTint.xyz * r7.yyy + r17.xyz;
+  r17.xyz = r11.www * r12.zzz + r17.xyz;
+  r15.xyz = r15.xyz * r10.xxx;
+  r10.xyw = r12.xyw * r10.www + r15.xyz;
+  r7.xyz = r11.xyz * r7.zzz + r10.xyw;
+  r7.xyz = r14.xyz * r10.zzz + r7.xyz;
+  r7.xyz = r7.xyz * r16.xyz;
+  r7.xyz = r9.xyz * r17.xyz + r7.xyz;
+			if (_MatCap) {
+  r9.x = (_CharacterMatCapEnable >= 0.5);
+  if (r9.x != 0) {
+    r9.x = 5 * r3.y;
+    r9.x = floor(r9.x);
+    r9.x = 4 + -r9.x;
+    r9.x = max(0, r9.x);
+    r9.x = (int)r9.x;
+    r9.y = (_MatCapTexID_A[r9.x] < 50);
+    if (r9.y != 0) {
+      r9.y = saturate(5.0999999 * r0.z);
+      r9.z = (0.200000003 >= r0.z);
+      r9.z = r9.z ? 1.000000 : 0;
+      r9.y = r9.y * r9.z;
+      r0.z = r0.w ? r9.y : r0.z;
+      r0.w = (_UseMatCapMask >= 0.5);
+      r0.w = r0.w ? 1.000000 : 0;
+      r0.z = -1 + r0.z;
+      r0.z = r0.w * r0.z + 1;
+      r9.yz = mul(r4.xyz, unity_MatrixV);
+      r9.yz = r9.yz * float2(0.5,-0.5) + float2(0.5,0.5);
+      r0.w = (0.5 < _MatCapRefract_A[r9.x]);
+      if (r0.w != 0) {
+        r10.xy = _RefractParamArray[r9.x].xy * v0.xy + _RefractParamArray[r9.x].zw;
+        r9.yz = _RefractDepth_A[r9.x] * r9.yz + r10.xy;
+      }
+      r10.x = _MatCapUSpeed_A[r9.x] * _GlobalTime;
+      r10.y = _MatCapVSpeed_A[r9.x] * _GlobalTime;
+      r10.xy = r10.xy + r9.yz;
+      r10.z = _MatCapTexID_A[r9.x];
+	  ////////////////////////////////////////////
+		float4 MatCap_Array[5] = {
+		tex2D( MatCapTex_s, r10.xy),
+		tex2D( MatCapTex2_s, r10.xy),
+		tex2D( MatCapTex3_s, r10.xy),
+		tex2D( MatCapTex4_s, r10.xy),
+		tex2D( MatCapTex5_s, r10.xy)};
+	  ////////////////////////////////////////////
+      r10.xyzw = MatCap_Array[r10.z].xyzw;
+      r9.yzw = _MatCapColorTintArray[r9.x].xyz * r10.xyz;
+      r0.z = r10.w * r0.z;
+      r0.w = (_MatCapBlendMode_A[r9.x] < 0.5);
+      if (r0.w != 0) {
+        r0.w = saturate(_MatCapAlphaBurst_A[r9.x] * r0.z);
+        r11.xyz = r9.yzw * _MatCapColorBurst_A[r9.x] + -r1.xyz;
+        r1.xyz = r0.www * r11.xyz + r1.xyz;
+      } else {
+        r0.w = (_MatCapBlendMode_A[r9.x] < 1.5);
+        if (r0.w != 0) {
+          r0.w = saturate(_MatCapAlphaBurst_A[r9.x] * r0.z);
+          r11.xyz = r9.yzw * r0.www;
+          r1.xyz = r11.xyz * _MatCapColorBurst_A[r9.x] + r1.xyz;
+        } else {
+          r10.xyz = r10.xyz * _MatCapColorTintArray[r9.x].xyz + float3(-0.5,-0.5,-0.5);
+          r9.yzw = saturate(r10.xyz * _MatCapColorBurst_A[r9.x] + r9.yzw);
+          r0.z = saturate(_MatCapAlphaBurst_A[r9.x] * r0.z);
+          r9.xyz = float3(-0.5,-0.5,-0.5) + r9.yzw;
+          r9.xyz = r0.zzz * r9.xyz + float3(0.5,0.5,0.5);
+          r10.xyz = r9.xyz * r1.xyz;
+          r11.xyz = r10.xyz + r10.xyz;
+          r12.xyz = float3(1,1,1) + -r1.xyz;
+          r12.xyz = r12.xyz + r12.xyz;
+          r9.xyz = float3(1,1,1) + -r9.xyz;
+          r9.xyz = -r12.xyz * r9.xyz + float3(1,1,1);
+          r12.xyz = (r1.xyz >= float3(0.5,0.5,0.5));
+          r12.xyz = r12.xyz ? float3(1,1,1) : 0;
+          r9.xyz = -r10.xyz * float3(2,2,2) + r9.xyz;
+          r1.xyz = r12.xyz * r9.xyz + r11.xyz;
+        }
+      }
+    }
+  }   }
+  r0.z = (0.5 < v8.z);
+  r9.xyz = r0.zzz ? r4.xyz : v2.xyz;
+  if (_UseChannelMixer) {
+	r1.xyz = _r2.xyz;
+  }
+  r0.w = dot(r1.xyz, float3(0.289999992,0.600000024,0.109999999));
+  r0.w = r0.w * 0.287499994 + 1.4375;
+  r9.x = dot(r8.xyz, r9.xyz);
+  r9.y = r9.x + -r8.w;
+  r9.y = saturate(-r9.y * 3 + 1);
+  r9.z = r9.y + r9.y;
+  r9.y = sqrt(r9.y);
+  r9.y = r9.z * r9.y;
+  r9.y = min(1, r9.y);
+  r9.z = r8.w * 0.5 + 0.5;
+  r9.w = saturate(r8.w);
+  r9.y = r9.z * r9.y + -r9.w;
+  r9.y = r9.y * 0.5 + r9.w;
+  r9.x = saturate(r9.x);
+  r9.z = max(r1.y, r1.z);
+  r9.z = max(r9.z, r1.x);
+  r10.x = (1 < r9.z);
+  r10.yzw = r1.xyz / r9.zzz;
+  r10.xyz = r10.xxx ? r10.yzw : r1.xyz;
+  r9.z = 1 + -r0.w;
+  r0.w = r9.y * r9.z + r0.w;
+  r10.xyz = log2(r10.xyz);
+  r10.xyz = r10.xyz * r0.www;
+  r10.xyz = exp2(r10.xyz);
+  if (_UseChannelMixer) {
+	r11.xyz = -_r1.xyz * _r1.xyz + r10.xyw;
+  } else {
+	r11.xyz = r10.xyz + -r1.xyz;
+  }
+  r1.xyz = r11.xyz * float3(0.5,0.5,0.5) + r1.xyz;
+  r10.xyz = r10.xyz + -r1.xyz;
+  r1.xyz = r9.xxx * r10.xyz + r1.xyz;
+  r0.w = -r0.x * 0.959999979 + 0.959999979;
+  r9.xyz = r1.xyz * r0.www;
+  r10.xyz = float3(-0.0399999991,-0.0399999991,-0.0399999991) + r1.xyz;
+  r10.xyz = r0.xxx * r10.xyz + float3(0.0399999991,0.0399999991,0.0399999991);
+  r10.w = -r0.y * _Glossiness + 1;
+  r10.w = r10.w * r10.w;
+  r11.x = r10.w * 4 + 2;
+  r11.y = r10.w * r10.w;
+  r11.z = r10.w * r10.w + -1;
+  r11.w = r13.w ? _HighlightShape2 : _HighlightShape;
+  r11.w = r13.z ? _HighlightShape3 : r11.w;
+  r11.w = r13.y ? _HighlightShape4 : r11.w;
+  r11.w = r13.x ? _HighlightShape5 : r11.w;
+  r12.xyz = r13.www ? _SpecularColor2.xyz : _SpecularColor.xyz;
+  r12.xyz = r13.zzz ? _SpecularColor3.xyz : r12.xyz;
+  r12.xyz = r13.yyy ? _SpecularColor4.xyz : r12.xyz;
+  r12.xyz = r13.xxx ? _SpecularColor5.xyz : r12.xyz;
+  r12.w = (0.5 < r11.w);
+  if (r12.w != 0) {
+    r4.w = saturate(r3.z * 1.5 + 0.5);
+    r3.z = r13.w ? _ShapeSoftness2 : _ShapeSoftness;
+    r3.z = r13.z ? _ShapeSoftness3 : r3.z;
+    r3.z = r13.y ? _ShapeSoftness4 : r3.z;
+    r3.z = r13.x ? _ShapeSoftness5 : r3.z;
+    r14.xyz = r5.xyz * r3.www + r8.xyz;
+    r12.w = dot(r14.xyz, r14.xyz);
+    r12.w = rsqrt(r12.w);
+    r14.xyz = r14.xyz * r12.www;
+    r12.w = (0 < _HeadSphereNormalCenter.w);
+    r15.xyz = -_HeadSphereNormalCenter.xyz + r2.xyz;
+    r14.w = dot(r15.xyz, r15.xyz);
+    r15.w = rsqrt(r14.w);
+    r14.w = sqrt(r14.w);
+    r14.w = -_HeadSphereNormalCenter.w + r14.w;
+    r14.w = saturate(20 * r14.w);
+    r14.w = 1 + -r14.w;
+    r15.xyz = r15.xyz * r15.www + -r4.xyz;
+    r15.xyz = r14.www * r15.xyz + r4.xyz;
+    r14.w = dot(r8.xyz, r15.xyz);
+    r14.w = saturate(r14.w * 0.5 + 0.5);
+    r15.w = sqrt(r14.w);
+    r15.xyzw = r12.wwww ? r15.xyzw : r4.xyzw;
+    r4.w = dot(r15.xyz, r14.xyz);
+    r4.w = saturate(r4.w * 0.5 + 0.5);
+    r4.w = -r4.w * r15.w + 1;
+    r4.w = -r4.w + r3.x;
+    r3.x = saturate(r4.w / r3.z);
+  }
+  r3.x = _SpecIntensity * r3.x;
+  r12.xyz = r3.xxx * r12.xyz;
+  r12.xyz = r12.xyz * r10.xyz;
+  r3.x = (r11.w < 0.5);
+  r5.xyz = r5.xyz * r3.www + r8.xyz;
+  r3.z = dot(r5.xyz, r5.xyz);
+  r3.z = rsqrt(r3.z);
+  r5.xyz = r5.xyz * r3.zzz;
+  r3.z = r13.w ? _SpecularRange2 : _SpecularRange;
+  r3.z = r13.z ? _SpecularRange3 : r3.z;
+  r3.z = r13.y ? _SpecularRange4 : r3.z;
+  r3.z = r13.x ? _SpecularRange5 : r3.z;
+  r3.w = r3.z * r8.w;
+  r3.w = saturate(r3.w * 0.75 + 0.25);
+  r4.w = dot(r4.xyz, r5.xyz);
+  r4.w = r4.w * r3.z;
+  r4.w = saturate(r4.w * 0.75 + 0.25);
+  r5.x = dot(r8.xyz, r5.xyz);
+  r3.z = r5.x * r3.z;
+  r3.z = saturate(r3.z * 0.75 + 0.25);
+  r4.w = r4.w * r4.w;
+  r4.w = r4.w * r11.z + 1.00001001;
+  r3.z = r3.z * r3.z;
+  r4.w = r4.w * r4.w;
+  r3.z = max(0.100000001, r3.z);
+  r4.w = r4.w * r3.z;
+  r4.w = r4.w * r11.x;
+  r4.w = r11.y / r4.w;
+  r0.y = saturate(-r0.y * _Glossiness + r4.w);
+  r0.y = r0.y * r3.w;
+  r4.w = max(9.99999975e-06, r10.w);
+  r0.y = r0.y / r4.w;
+  r4.w = r13.w ? _ToonSpecular2 : _ToonSpecular;
+  r4.w = r13.z ? _ToonSpecular3 : r4.w;
+  r4.w = r13.y ? _ToonSpecular4 : r4.w;
+  r4.w = r13.x ? _ToonSpecular5 : r4.w;
+  r5.x = r13.w ? _ModelSize2 : _ModelSize;
+  r5.x = r13.z ? _ModelSize3 : r5.x;
+  r5.x = r13.y ? _ModelSize4 : r5.x;
+  r5.x = r13.x ? _ModelSize5 : r5.x;
+  r4.w = r5.x * r4.w;
+  r0.y = r4.w * r0.y;
+  r0.y = saturate(10 * r0.y);
+  r0.y = 100 * r0.y;
+  r3.z = 0.166663334 / r3.z;
+  r3.z = min(1, r3.z);
+  r3.z = r3.z * r3.w;
+  r3.z = 100 * r3.z;
+  r0.y = r3.x ? r0.y : r3.z;
+  r3.xzw = r0.yyy * r12.xyz;
+  r5.xyz = r3.xzw * r7.xyz;
+  r3.xzw = r3.xzw * r7.xyz + float3(-1,-1,-1);
+  r3.xzw = max(float3(0,0,0), r3.xzw);
+  r5.xyz = r9.xyz * r7.xyz + r5.xyz;
+  r0.y = (_Emission >= 0.5);
+  r11.xyz = r13.www ? _EmissionColor2.xyz : _EmissionColor.xyz;
+  r11.xyz = r13.zzz ? _EmissionColor3.xyz : r11.xyz;
+  r11.xyz = r13.yyy ? _EmissionColor4.xyz : r11.xyz;
+  r11.xyz = r13.xxx ? _EmissionColor5.xyz : r11.xyz;
+  r11.xyz = r11.xyz * r1.www;
+  r11.xyz = r11.xyz * r1.xyz;
+  r11.xyz = r0.yyy ? r11.xyz : 0;
+  r0.y = r11.x + r11.y;
+  r0.y = r0.y + r11.z;
+  r1.w = 4.5 * r3.y;
+  r1.w = floor(r1.w);
+  r1.w = 4 + -r1.w;
+  r1.w = (int)r1.w;
+  r1.w = ((int)r1.w == int(_OverrideMainLight));
+  r3.y = (0 < _PackedParams1.y);
+  if (r3.y != 0) {
+    r3.y = min(2, _PackedParams1.y);
+    r4.w = (0 < r3.y);
+    if (r4.w != 0) {
+      r12.xyz = _ShallowColor.xyz + -r2.xyz;
+      r4.w = dot(r12.xyz, r12.xyz);
+      r8.w = max(1.17549435e-38, r4.w);
+      r10.w = rsqrt(r8.w);
+      r14.xyz = r12.xyz * r10.www;
+      r15.y = _ShallowColor3.x * r8.w;
+      r10.w = (-0.5 < _ShallowColor3.y);
+      r16.x = 1 / r8.w;
+      r16.y = r15.y * r15.y;
+      r15.x = 1;
+      r15.xy = r10.ww ? r16.xy : r15.xy;
+      r8.w = (_ShallowColor3.y < -1.5);
+      r10.w = (r15.y >= 1);
+      r10.w = r10.w ? 1.000000 : 0;
+      r8.w = r8.w ? r10.w : r15.y;
+      r8.w = saturate(1 + -r8.w);
+      r8.w = r8.w * r8.w;
+      r8.w = r15.x * r8.w;
+      r10.w = dot(_ShallowColor2.xyz, r14.xyz);
+      r10.w = saturate(r10.w * _ShallowColor3.z + _ShallowColor3.w);
+      r10.w = r10.w * r10.w;
+      r8.w = r10.w * r8.w;
+      r14.xyz = _ShallowColor4.xyz * r8.www;
+      r8.w = max(r14.x, r14.y);
+      r8.w = max(r8.w, r14.z);
+      r10.w = 6.10351562e-05 + r8.w;
+      r4.w = rsqrt(r4.w);
+      r12.xyz = r12.xyz * r4.www;
+      r4.w = dot(r4.xyz, r12.xyz);
+      r12.y = r8.w * r4.w;
+      r12.x = r8.w / _ShallowColor.w;
+      r14.xyz = r14.xyz * r8.www;
+      r3.y = (1 < r3.y);
+      if (r3.y != 0) {
+        r2.xyz = _ShallowColor5.xyz + -r2.xyz;
+        r3.y = dot(r2.xyz, r2.xyz);
+        r4.w = max(1.17549435e-38, r3.y);
+        r8.w = rsqrt(r4.w);
+        r15.xyz = r8.www * r2.xyz;
+        r16.y = _ShadowColor2.x * r4.w;
+        r8.w = (-0.5 < _ShadowColor2.y);
+        r17.x = 1 / r4.w;
+        r17.y = r16.y * r16.y;
+        r16.x = 1;
+        r12.zw = r8.ww ? r17.xy : r16.xy;
+        r4.w = (_ShadowColor2.y < -1.5);
+        r8.w = (r12.w >= 1);
+        r8.w = r8.w ? 1.000000 : 0;
+        r4.w = r4.w ? r8.w : r12.w;
+        r4.w = saturate(1 + -r4.w);
+        r4.w = r4.w * r4.w;
+        r4.w = r12.z * r4.w;
+        r8.w = dot(_ShadowColor.xyz, r15.xyz);
+        r8.w = saturate(r8.w * _ShadowColor2.z + _ShadowColor2.w);
+        r8.w = r8.w * r8.w;
+        r4.w = r8.w * r4.w;
+        r15.xyz = _ShadowColor3.xyz * r4.www;
+        r4.w = max(r15.x, r15.y);
+        r4.w = max(r4.w, r15.z);
+        r10.w = r10.w + r4.w;
+        r3.y = rsqrt(r3.y);
+        r2.xyz = r3.yyy * r2.xyz;
+        r2.x = dot(r4.xyz, r2.xyz);
+        r12.y = r4.w * r2.x + r12.y;
+        r2.x = r4.w / _ShallowColor5.w;
+        r12.x = r12.x + r2.x;
+        r14.xyz = r15.xyz * r4.www + r14.xyz;
+      }
+    } else {
+      r14.xyz = float3(0,0,0);
+      r12.xy = float2(0,0);
+      r10.w = 6.10351562e-05;
+    }
+    r2.x = r12.y / r12.x;
+    r2.x = saturate(0.5 + r2.x);
+    r12.xyz = r14.xyz / r10.www;
+    r2.xyz = r12.xyz * r2.xxx;
+  } else {
+    r2.xyz = float3(0,0,0);
+  }
+  r2.xyz = v9.xyz + r2.xyz;
+  r5.xyz = r2.xyz * r9.xyz + r5.xyz;
+  r5.xyz = _CharacterAmbient.xyz * r1.xyz + r5.xyz;
+  r3.xyz = r5.xyz + r3.xzw;
+  r1.x = (0.5 >= _IsStencilReceiverPass);
+  if (r1.x != 0) {
+    r1.x = dot(r6.xyz, r8.xyz);
+    r1.x = -r1.x * 0.5 + 0.5;
+    r1.x = r1.x * r1.x;
+    r1.y = r1.x * 0.5 + 0.5;
+    r3.w = r4.y * 0.5 + 0.5;
+    r4.w = r3.w * r3.w;
+    r3.w = saturate(r1.w ? r3.w : r4.w);
+    r4.w = r3.w * -2 + 3;
+    r3.w = r3.w * r3.w;
+    r3.w = r4.w * r3.w;
+    r4.w = r3.w * r3.w;
+    r4.w = r4.w * r4.w;
+    r4.w = r4.w * r3.w;
+    r5.xyz = r1.www ? float3(1,0.5,-1) : float3(0.699999988,1,-0.699999988);
+    r5.y = r5.y + r5.z;
+    r4.w = r4.w * r5.y + r5.x;
+    r3.w = r4.w * r3.w;
+    r4.w = r9.w * r6.w;
+    r4.w = r4.w * 0.949999988 + 0.0500000007;
+	
+    if (r5.w != 0) {
+    } else {
+    }
+      r5.x = 0;
+	
+    r5.x = r5.x * 0.399999976 + r7.w;
+    r5.x = saturate(0.600000024 + r5.x);
+    r1.y = r3.w * r1.y;
+    r1.y = r1.y * r4.w;
+    r1.y = r1.y * r5.x;
+    r2.w = sqrt(r2.w);
+    r3.w = 0.0833333358 * r2.w;
+    r3.w = min(1, r3.w);
+    r5.xy = r3.ww * float2(-0.449999988,-0.449999988) + float2(0.75,0.649999976);
+    r3.w = dot(r6.xyz, r4.xyz);
+    r3.w = 1 + -r3.w;
+    r5.xy = r3.ww + -r5.xy;
+    r5.xy = saturate(float2(5.00000048,3.33333325) * r5.xy);
+    r5.zw = r5.xy * float2(-2,-2) + float2(3,3);
+    r5.xy = r5.xy * r5.xy;
+    r5.xy = r5.zw * r5.xy;
+    r3.w = r1.w ? r5.x : r5.y;
+    r5.xyz = r13.www ? _UISunColor2.xyz : _UISunColor.xyz;
+    r5.xyz = r13.zzz ? _UISunColor3.xyz : r5.xyz;
+    r5.xyz = r13.yyy ? _UISunColor4.xyz : r5.xyz;
+    r5.xyz = r13.xxx ? _UISunColor5.xyz : r5.xyz;
+    r4.w = dot(r5.xyz, float3(0.300000012,0.600000024,0.100000001));
+    r5.xyz = r1.www ? r5.xyz : r4.www;
+    r5.w = dot(r5.xyz, float3(0.330000013,0.330000013,0.330000013));
+    r4.w = r1.w ? r5.w : r4.w;
+    r5.xyz = r5.xyz * r5.xyz;
+    r5.xyz = r5.xyz * r5.xyz;
+    r5.xyz = r5.xyz * r5.xyz;
+    r5.w = dot(r5.xyz, float3(0.699999988,0.699999988,0.699999988));
+    r5.w = 6.10351562e-05 + r5.w;
+    r5.w = rcp(r5.w);
+    r4.w = r5.w * r4.w;
+    r5.xyz = r4.www * r5.xyz + -r7.xyz;
+    r5.xyz = r7.www * r5.xyz + r7.xyz;
+    r1.x = log2(r1.x);
+    r1.x = 20 * r1.x;
+    r1.x = exp2(r1.x);
+    r6.xyz = r7.xyz + -r5.xyz;
+    r5.xyz = r1.xxx * r6.xyz + r5.xyz;
+    r1.x = r9.x + r9.y;
+    r0.w = r1.z * r0.w + r1.x;
+    r0.w = 0.330000013 * r0.w;
+    r0.w = r0.w * r0.w;
+    r0.w = r0.w * -0.199999988 + 1;
+    r1.x = 48 * _RimGlowIntensityForChara;
+    r0.w = 0.100000001 * r0.w;
+    r6.xyz = log2(r9.xyz);
+    r6.xyz = float3(0.200000003,0.200000003,0.200000003) * r6.xyz;
+    r6.xyz = exp2(r6.xyz);
+    r1.z = dot(r6.xyz, r6.xyz);
+    r1.z = max(1.17549435e-38, r1.z);
+    r1.z = rsqrt(r1.z);
+    r6.xyz = r6.xyz * r1.zzz;
+    r7.xyz = r6.xyz * r0.www;
+    r6.xyz = -r0.www * r6.xyz + r10.xyz;
+    r6.xyz = r0.xxx * r6.xyz + r7.xyz;
+    r6.xyz = r6.xyz * r1.xxx;
+    r0.x = r3.w * r1.y;
+    r1.xyz = r0.xxx * r5.xyz;
+    r1.xyz = r1.xyz * r6.xyz;
+    r5.xyz = r13.www ? _RimGlowLightColor2.xyz : _RimGlowLightColor.xyz;
+    r5.xyz = r13.zzz ? _RimGlowLightColor3.xyz : r5.xyz;
+    r5.xyz = r13.yyy ? _RimGlowLightColor4.xyz : r5.xyz;
+    r5.xyz = r13.xxx ? _RimGlowLightColor5.xyz : r5.xyz;
+    r1.xyz = r5.xyz * r1.xyz;
+    r0.x = saturate(r2.w * 0.200000003 + -1);
+    r0.x = r0.x * -0.699999988 + 1;
+    r5.xyz = r1.xyz * r0.xxx;
+    r0.w = r5.x + r5.y;
+    r0.x = r1.z * r0.x + r0.w;
+    r0.x = 0.330000013 * r0.x;
+    r0.x = r0.x * r0.x;
+    r0.x = r0.x * 0.5 + 1;
+    r1.xyz = r5.xyz * r0.xxx;
+    r0.x = r0.z ? 0.200000003 : 1;
+    r0.xzw = r1.xyz * r0.xxx;
+  } else {
+    r0.xzw = float3(0,0,0);
+  }
+  r1.xyz = r2.xyz * float3(2,2,2) + float3(1,1,1);
+  r0.xzw = r1.xyz * r0.xzw;
+  o0.xyz = r3.xyz + r11.xyz;	
+  o0.w = 1;
+  return o0;
+}
+
+technique MainTecBS0  < string MMDPass = "object_ss"; > {
+    pass DrawObject {
+		CULLMODE = 1;
+        VertexShader = compile vs_3_0 vs_model();
+        PixelShader  = compile ps_3_0 ps_model();
+    }
+}
+///////////////////////////////////////////////////////////////////////////////////////////////
