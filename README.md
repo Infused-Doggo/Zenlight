@@ -8,7 +8,7 @@ Zenlight it's a Zenless Zone Zero 'visual port' made for MikuMikuDance.
 > - Eye shader missing.
 > - Add MMD's lame shadows.
 > - Shader controller
-> - Fake Hair shadow
+> - Fake Hair shadow  // DONE
 > - Future bugs and tests
 
 # Usage
