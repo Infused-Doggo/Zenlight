@@ -4,10 +4,10 @@ Zenlight it's a Zenless Zone Zero 'visual port' made for MikuMikuDance.
 # Road to Go.
 > - Principal .fx
 > - Outline addition
-> - Face Ramp fix
-> - Eye shader missing.
-> - Add MMD's lame shadows.
-> - Shader controller
+> - Face Ramp fix  // DONE
+> - Eye shader missing.  // DONE
+> - Add MMD's lame shadows.  // DONE
+> - Shader controller  // DONE
 > - Fake Hair shadow  // DONE
 > - Future bugs and tests
 
