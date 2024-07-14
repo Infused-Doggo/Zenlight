@@ -1,4 +1,14 @@
-shared texture StencilRenderMask : RENDERCOLORTARGET;
+
+shared texture2D DropShadow : OFFSCREENRENDERTARGET;
+sampler2D Debug = sampler_state {
+	texture = <DropShadow>;
+	MINFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+    MIPFILTER = LINEAR;
+    ADDRESSU  = CLAMP;
+    ADDRESSV  = CLAMP;
+};
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 sampler DefSampler : register(s0);
 //============================================================================//
@@ -48,7 +58,8 @@ vs_out vs_model (vs_in i)
   float4 r0,r1,r2,r3,r4,r5,r6,r7,r8;
   #include "Shader/Common.fxh"
   
-  _MiddlePointPosition = float4(LightDirection.zyx*36, 1);
+ static float4 _MiddlePointPosition = float4(LightDirection.xyz*36.8, 1);
+ 
 
   r0.xyz = mul( v0, (float3x3)unity_ObjectToWorld );
   r1.xyzw = mul( float4(r0.xyz, 1), unity_MatrixVP );
@@ -68,20 +79,23 @@ vs_out vs_model (vs_in i)
   if (r0.w != 0) {
   } else {
   }
-    r2.xyz = float3(0,0,0);
+    r2.xyz = float3(0, 0, 0);
+	
+	float3 head_right  = head_bone._11_12_13;
+    float3 head_foward = head_bone._31_32_33;
 
   r2.xyz = -_MiddlePointPosition.xyz + r2.xyz;
   r1.x = dot(r2.xyz, r2.xyz);
   r1.x = rsqrt(r1.x);
   r2.xyz = r2.xyz * r1.xxx;
-  r1.x = dot(-unity_ObjectToWorld._m00_m10_m20, -unity_ObjectToWorld._m00_m10_m20);
+  r1.x = dot(-head_right, -head_right);
   r1.x = max(1.17549435e-38, r1.x);
   r1.x = rsqrt(r1.x);
-  r3.xyz = -unity_ObjectToWorld._m00_m10_m20 * r1.xxx;
-  r1.x = dot(unity_ObjectToWorld._m01_m11_m21, unity_ObjectToWorld._m01_m11_m21);
+  r3.xyz = -head_right * r1.xxx;
+  r1.x = dot(head_foward, head_foward);
   r1.x = max(1.17549435e-38, r1.x);
   r1.x = rsqrt(r1.x);
-  r1.xy = unity_ObjectToWorld._m01_m21 * r1.xx;
+  r1.xy = head_foward.xz * r1.xx;
   r2.w = dot(r3.xyz, r2.xyz);
   r2.w = 0.5 * abs(r2.w);
   r2.xz = r2.ww * r1.xy + r2.xz;
@@ -92,10 +106,13 @@ vs_out vs_model (vs_in i)
   r1.x = dot(r2.xyz, r2.xyz);
   r1.x = rsqrt(r1.x);
   r2.xyz = r2.xyz * r1.xxx;
-  r3.xyz = mul( r2.xyz, (float3x3)unity_ObjectToWorld );
+  r2.xyz = mul( r2.xyz, (float3x3)unity_ObjectToWorld );
+  
+
+  
   r1.x = dot(r2.xyz, r2.xyz);
   r1.x = rsqrt(r1.x);
-  r1.xy = r2.zy * r1.xx;
+  r1.xy = (r2.xz * r1.xx)*float2(-1, 1);
   r2.x = min(abs(r1.x), abs(r1.y));
   r2.y = max(abs(r1.x), abs(r1.y));
   r2.y = 1 / r2.y;
@@ -106,20 +123,20 @@ vs_out vs_model (vs_in i)
   r2.z = r2.y * r2.z + -0.330299497;
   r2.y = r2.y * r2.z + 0.999866009;
   r2.z = r2.x * r2.y;
-  r2.w = cmp(abs(r1.y) < abs(r1.x));
+  r2.w = (abs(r1.y) < abs(r1.x));
   r2.z = r2.z * -2 + 1.57079637;
   r2.z = r2.w ? r2.z : 0;
   r2.x = r2.x * r2.y + r2.z;
-  r2.y = cmp(r1.y < -r1.y);
+  r2.y = (r1.y < -r1.y);
   r2.y = r2.y ? -3.141593 : 0;
   r2.x = r2.x + r2.y;
   r2.y = min(-r1.x, r1.y);
   r1.x = max(-r1.x, r1.y);
-  r1.y = cmp(r2.y < -r2.y);
-  r1.x = cmp(r1.x >= -r1.x);
+  r1.y = (r2.y < -r2.y);
+  r1.x = (r1.x >= -r1.x);
   r1.x = r1.x ? r1.y : 0;
   r1.x = r1.x ? -r2.x : r2.x;
-  r2.y = LightDirection.x;
+  r2.y = 0.318309873 * r1.x;
   r1.y = 255 * v3.z;
   r1.y = (int)r1.y;
   r3.xy = (int2)r1.yy && int2(16,3);
@@ -129,7 +146,7 @@ vs_out vs_model (vs_in i)
   r2.z = v7.y;
   r4.x = v4.x;
   r4.z = v7.x;
-  r2.xyz = r1.xxx ? r2.xyz : r4.xyz;
+  r2.xyz = float3(0, 1, 0) - (r1.xxx ? r2.xyz : r4.xyz)*float3(1, 1, 1);
   
   r3.yz = (int2)r3.xy;
   o.o6.z = -r3.z * 0.200000003 + 0.899999976;
@@ -139,17 +156,19 @@ vs_out vs_model (vs_in i)
   o.o4 = float4(r0.xyz, 1);
   o.o10.zw = mul( float4(r0.xyz, 1), unity_MatrixVP ).zw;
 
-  o.o7.xyzw = o.o10;
+  o.o7.xyzw = HgShadow_Valid ? o.o10 : mul( float4(r0.xyz, 1), LightWorldViewProjMatrix );
   
   
   o.o6.xyw = float3(1, 1, 1);
   
   o.o0.xy = v4.xy;
   o.o0.zw = r2.xy;
-  o.o1.xyzw = float4(0,0,0,0);
   
-  o.o1.xy = v6.xy;
-  o.o1.zw = float2(0,0);
+  float2 texCoord = float2( ( o.o10.x/o.o10.w + 1.0f ) * 0.5f,
+  1.0f - ( o.o10.y/o.o10.w + 1.0f ) * 0.5f ) + HgShadow_ViewportOffset;
+  
+  o.o1.xyzw = float4(texCoord.xy,0,0);
+
     return o;
 }
 
@@ -165,7 +184,7 @@ float4 ps_model(vs_out i, int v11 : VFACE) : COLOR0
 	float4 v4 = i.o4; //dont
 	float4 v5 = float4(0.1, -1, 0.3, 2.6); //i.o5
 	float4 v6 = float4(0.1, -1, i.o6.z, 2.6);
-	float4 v7 = float4(1, 1, 1, 1); //i.o7
+	float4 v7 = i.o7;
 	float4 v8 = float4(0.05, 16, 0, 0); //i.o8
 	float3 v9 = float3(0, 0, 0); //i.o9
 	float4 v10 = 1;
@@ -287,14 +306,35 @@ float4 ps_model(vs_out i, int v11 : VFACE) : COLOR0
   } else {
   }
   
-  if (r4.w || HgShadow_Valid) {
-    float comp = HgShadow_GetSelfShadowRate(v7);
-    r5.w = comp;
-    r3.z = comp;
+  float comp;
+  if (r4.w != 0) {
+	float4 ZCalcTex = v7;
+	ZCalcTex /= ZCalcTex.w;
+    float2 TransTexCoord;
+    TransTexCoord.x = (1.0f + ZCalcTex.x)*0.5f;
+    TransTexCoord.y = (1.0f - ZCalcTex.y)*0.5f;
+    if( any( saturate(TransTexCoord) - TransTexCoord ) ) {
+    } else {
+        if(parthf) {
+            // セルフシャドウ mode2
+            comp=1-saturate(max(ZCalcTex.z-tex2D(DefSampler,TransTexCoord).r , 0.0f)*SKII2*TransTexCoord.y-0.3f);
+        } else {
+            // セルフシャドウ mode1
+            comp=1-saturate(max(ZCalcTex.z-tex2D(DefSampler,TransTexCoord).r , 0.0f)*SKII1-0.3f);
+        }
+	}
+	if (HgShadow_Valid) {
+		comp = HgShadow_GetSelfShadowRate(v7); 
+	}
+	r5.w = comp;
+    r3.z = 1;
   } else {
-    r5.w = 1;
+    r5.w = comp;
     r3.z = 1;
   }
+  
+  r5.w = r5.w - tex2D(Debug, v1.xy);
+  r3.z = r3.z - tex2D(Debug, v1.xy);
 
   r4.w = int(_OverrideMainLight);
   r4.w = cmp(0.5 < r4.w);
@@ -524,15 +564,7 @@ float4 ps_model(vs_out i, int v11 : VFACE) : COLOR0
   return o0;
 }
 
-void LightSourceShadowlessPS(out float4 oColor0 : COLOR0)
-{
-
-	oColor0 = float4(0.5, 0.5, 0.5, 0.5);
-}
-
-
-
-technique MainTecBS1  < string MMDPass = "object_ss"; > {
+technique MainTec0  < string MMDPass = "object"; > {
     pass DrawObject {
 		CULLMODE = 1;
         VertexShader = compile vs_3_0 vs_model();
@@ -540,24 +572,11 @@ technique MainTecBS1  < string MMDPass = "object_ss"; > {
     }
 }
 
-technique MainTecBS0  <string MMDPass = "object_ss";
-	string Script = 
-		"RenderColorTarget0=StencilRenderMask;"
-		"Pass=DrawObject2;"
-;>{
-	pass DrawObject {
+technique MainTecBS0  < string MMDPass = "object_ss"; > {
+    pass DrawObject {
 		CULLMODE = 1;
         VertexShader = compile vs_3_0 vs_model();
         PixelShader  = compile ps_3_0 ps_model();
     }
-	
-	pass DrawObject2 {	
-        VertexShader = compile vs_3_0 vs_model();
-        PixelShader  = compile ps_3_0 LightSourceShadowlessPS();
-    }
 }
-
-technique EdgeTec<string MMDPass = "edge";>{}
-technique ShadowTech<string MMDPass = "shadow";>{}
-technique ZplotTec<string MMDPass = "zplot";>{}
 ///////////////////////////////////////////////////////////////////////////////////////////////

@@ -52,7 +52,7 @@ vs_out vs_model (vs_in i)
   o.o10.xyzw = mul( float4(r0.xyz, 1), unity_MatrixVP );
   o.o2.xyzw = float4(v0.xyz, 1);
   o.o3.xyzw = float4(v1.xyz, 1);
-  o.o7.xyzw = o.o10;
+  o.o7.xyzw = HgShadow_Valid ? o.o10 : mul( float4(r0.xyz, 1), LightWorldViewProjMatrix );
   o.o0.xy = v4.xy;
   o.o0.zw = v7.xy;
   o.o1.xy = v6.xy;
@@ -155,13 +155,31 @@ float4 ps_model(vs_out i, int v10 : VFACE) : COLOR0
   } else {
   }
   
-  if (r7.z || HgShadow_Valid) {
-    float comp = HgShadow_GetSelfShadowRate(v7);
+  float comp;
+  if (r8.z != 0) {
+	float4 ZCalcTex = v7;
+	ZCalcTex /= ZCalcTex.w;
+    float2 TransTexCoord;
+    TransTexCoord.x = (1.0f + ZCalcTex.x)*0.5f;
+    TransTexCoord.y = (1.0f - ZCalcTex.y)*0.5f;
+    if( any( saturate(TransTexCoord) - TransTexCoord ) ) {
+    } else {
+        if(parthf) {
+            // セルフシャドウ mode2
+            comp=1-saturate(max(ZCalcTex.z-tex2D(DefSampler,TransTexCoord).r , 0.0f)*SKII2*TransTexCoord.y-0.3f);
+        } else {
+            // セルフシャドウ mode1
+            comp=1-saturate(max(ZCalcTex.z-tex2D(DefSampler,TransTexCoord).r , 0.0f)*SKII1-0.3f);
+        }
+	}
+	if (HgShadow_Valid) {
+		comp = HgShadow_GetSelfShadowRate(v7);
+	}
     r8.w = comp;
     r7.x = comp;
   } else {
-    r8.w = 1;
-    r7.x = 1;
+    r8.w = comp;
+    r7.x = comp;
   }
 	
   r8.y = int(_OverrideMainLight);
@@ -613,6 +631,14 @@ float4 ps_model(vs_out i, int v10 : VFACE) : COLOR0
   o0.xyz = r0.xzw * r0.yyy;
   o0.w = r0.y;
   return o0;
+}
+
+technique MainTec0  < string MMDPass = "object"; > {
+    pass DrawObject {
+		CULLMODE = 1;
+        VertexShader = compile vs_3_0 vs_model();
+        PixelShader  = compile ps_3_0 ps_model();
+    }
 }
 
 technique MainTecBS0  < string MMDPass = "object_ss"; > {

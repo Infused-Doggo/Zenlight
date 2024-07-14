@@ -1,0 +1,93 @@
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+sampler DefSampler : register(s0);
+//============================================================================//
+//  Base Structure  :
+struct vs_in
+{
+	float4 v0 : POSITION0;
+	float3 v1 : NORMAL0;
+	float4 v2 : COLOR0;
+};
+struct vs_out
+{
+	float4 o0 : SV_POSITION0;
+};
+//============================================================================//
+//  Vertex Shader(s)  :
+vs_out vs_model (vs_in i)
+{
+    vs_out o = (vs_out)0;
+	
+  float4 v0 = i.v0*float4(1, 1, 1, 1);
+  float3 v1 = i.v1;
+  float4 v2 = i.v2;
+	
+  float4 r0,r1,r2;
+  #include "Shader/Common.fxh"
+  float3 _AvatarMainLightPosition = float3(LightDirection.xyz)*36;
+
+  r0.x = dot(unity_ObjectToWorld._m02_m12_m22, unity_ObjectToWorld._m02_m12_m22);
+  r0.x = max(1.17549435e-38, r0.x);
+  r0.x = rsqrt(r0.x);
+  r0.xyz = unity_ObjectToWorld._m02_m12_m22 * r0.xxx;
+  r0.w = cmp(0 < _PackedParams0.w);
+  r1.xyz = r0.www ? _PackedParams0.xyz : _AvatarMainLightPosition.xyz;
+  r0.w = dot(r1.xyz, r0.xyz);
+  r0.x = dot(-r0.xyz, r1.xyz);
+  r0.y = v2.x * r0.w;
+  r0.yzw = r0.yyy * r1.xyz;
+	
+  r1.xyz = mul( v0, (float3x3)unity_ObjectToWorld );
+  r2.xyz = _WorldSpaceCameraPos.xyz + -r1.xyz;
+  r1.w = dot(r2.xyz, r2.xyz);
+  r1.w = rsqrt(r1.w);
+  r2.xyz = r2.xyz * r1.www;
+  r2.xyz = _ZOffset * r2.xyz;
+  r1.xyz = r2.xyz * v2.xxx + r1.xyz;
+  r0.yzw = r0.yzw * float3(8,8,8) + r1.xyz;
+  r0.yz = mul( float4(r0.yzw, 1), unity_MatrixVP ).xy;
+
+  r1.xyzw = mul( float4(r1.xyz, 1), unity_MatrixVP );
+  r0.yz = -r1.xy + r0.yz;
+  r2.xy = cmp(float2(0,0) < r0.yz);
+  r2.zw = cmp(r0.yz < float2(0,0));
+  r0.yz = float2(0.100000001,0.100000001) * r0.yz;
+  r0.yz = exp2(-abs(r0.yz));
+  r0.yz = float2(1,1) + -r0.yz;
+  r2.xy = (int2)-r2.xy + (int2)r2.zw;
+  r2.xy = (int2)r2.xy;
+  r0.yz = r2.xy * r0.yz;
+  r0.yz = _Length * r0.yz;
+  r0.w = cmp(0 < r0.x);
+  r0.x = cmp(r0.x < 0);
+  r0.x = (int)-r0.w + (int)r0.x;
+  r0.x = (int)r0.x;
+  r0.xy = r0.yz * r0.xx + r1.xy;
+  r0.zw = _XOffsetEnter + -_XOffsetNew;
+  r0.zw = 1 * r0.zw + _XOffsetNew;
+  r0.xy = v2.xx * r0.zw + r0.xy;
+  o.o0.xy = _ClipSpaceXOffset * r1.ww + r0.xy+ float2(0,-0.2);
+  o.o0.zw = r1.zw;
+    return o;
+}
+
+float4 ps_model(vs_out i) : COLOR0
+{	
+  return float4(1,1,1,1);
+}
+
+technique MainTec0  < string MMDPass = "object"; > {
+    pass DrawObject {
+        VertexShader = compile vs_3_0 vs_model();
+        PixelShader  = compile ps_3_0 ps_model();
+    }
+}
+
+technique MainTecBS0  < string MMDPass = "object_ss"; > {
+    pass DrawObject {
+        VertexShader = compile vs_3_0 vs_model();
+        PixelShader  = compile ps_3_0 ps_model();
+    }
+}
+///////////////////////////////////////////////////////////////////////////////////////////////
