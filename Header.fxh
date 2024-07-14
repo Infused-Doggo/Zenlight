@@ -67,6 +67,9 @@ bool spadd;    // スフィアマップ加算合成フラグ
 
 #define cmp -
 
+float4x4 head_bone : CONTROLOBJECT < string name = "(self)"; string item = "Bip001 Head"; >;
+static float3 head_foward = head_bone._31_32_33;
+
 texture MainTex: MATERIALTEXTURE;
 sampler MainTex_s = sampler_state {
     texture = <MainTex>;
@@ -126,6 +129,21 @@ sampler LightTex_s = sampler_state {
 #endif
 sampler ChannelMixTex_s = sampler_state {
     texture = <ChannelMixTex>;
+    MINFILTER = ANISOTROPIC;
+    MAGFILTER = ANISOTROPIC;
+    MIPFILTER = LINEAR;
+    MAXANISOTROPY = 16;
+    ADDRESSU  = WRAP;
+    ADDRESSV  = WRAP;
+};
+
+#ifdef _EyeColorMap
+	texture2D EyeColorMap <string ResourceName = _EyeColorMap;>;
+#else
+	texture2D EyeColorMap;
+#endif
+sampler EyeColorMap_s = sampler_state {
+    texture = <EyeColorMap>;
     MINFILTER = ANISOTROPIC;
     MAGFILTER = ANISOTROPIC;
     MIPFILTER = LINEAR;
@@ -214,10 +232,12 @@ float4x4 CTF(float3 frg_position, float4 frg_normal, float4 frg_texcoord) {
 
 #if Shader_Type == 0
 	#include "Shader/NapAvatarUI.fxsub"
+#elif Shader_Type == 1
+	#include "Shader/NapAvatarUIEye.fxsub"
 #elif Shader_Type == 2
 	#include "Shader/NapAvatarUIFace.fxsub"
 #elif Shader_Type == 3
 	#include "Shader/NapAvatarUITransparent.fxsub"
 #elif Shader_Type == 4
-	#include "Shader/shit.fxsub"
+	#include "Shader/NapStencilShadowCaster.fxsub"
 #endif
