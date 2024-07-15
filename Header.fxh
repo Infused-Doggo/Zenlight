@@ -67,7 +67,7 @@ bool spadd;    // スフィアマップ加算合成フラグ
 
 #define cmp -
 
-float4x4 Head_Pivot : CONTROLOBJECT < string name = "(self)"; string item = "頭"; >;
+float4x4 Head_Pivot : CONTROLOBJECT < string name = "(self)"; string item = "Bip001 Head"; >;
 static float3 Pivot_X = Head_Pivot._11_12_13;
 static float3 Pivot_Z = Head_Pivot._31_32_33;
 bool Zen_C  : CONTROLOBJECT < string name = "Zen_Controller.pmx"; >;

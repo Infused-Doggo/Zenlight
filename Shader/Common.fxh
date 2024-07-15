@@ -53,7 +53,7 @@ float _UseOverlayTex = 0.0;
 
  static float _MatCapTexID_A[5] = {
   _MatCapTexID < 99.0f ? _MatCapTexID : 0,
-  _MatCapTexID < 99.0f ? _MatCapTexID : 0,
+  _MatCapTexID < 99.0f ? _MatCapTexID : 1,
   _MatCapTexID < 99.0f ? _MatCapTexID : 2,
   _MatCapTexID < 99.0f ? _MatCapTexID : 3,
   _MatCapTexID < 99.0f ? _MatCapTexID : 4};
