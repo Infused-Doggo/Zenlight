@@ -67,8 +67,28 @@ bool spadd;    // スフィアマップ加算合成フラグ
 
 #define cmp -
 
-float4x4 head_bone : CONTROLOBJECT < string name = "(self)"; string item = "Bip001 Head"; >;
-static float3 head_foward = head_bone._31_32_33;
+float4x4 Head_Pivot : CONTROLOBJECT < string name = "(self)"; string item = "頭"; >;
+static float3 Pivot_X = Head_Pivot._11_12_13;
+static float3 Pivot_Z = Head_Pivot._31_32_33;
+bool Zen_C  : CONTROLOBJECT < string name = "Zen_Controller.pmx"; >;
+
+	//------------ Morphs ------------//
+float Specular_A   : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Specular +"; >;
+float Specular_B   : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Specular -"; >;
+float Metallic_A   : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Metallic +"; >;
+float Metallic_B   : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Metallic -"; >;
+float Glossiness_A : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Glossiness +"; >;
+float Glossiness_B : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Glossiness -"; >;
+float Refract_A    : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Refract +"; >;
+float Refract_B    : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Refract -"; >;
+float Emission_A   : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Emission +"; >;
+float Emission_B   : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Emission -"; >;
+float Ambient_A    : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Ambient +"; >;
+float Ambient_B    : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Ambient -"; >;
+float Shadow_A     : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Shadow +"; >;
+float Shadow_B     : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Shadow -"; >;
+float Bump_A       : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Bump +"; >;
+float Bump_B       : CONTROLOBJECT < string name = "Zen_Controller.pmx"; string item = "Bump -"; >;
 
 texture MainTex: MATERIALTEXTURE;
 sampler MainTex_s = sampler_state {
@@ -228,6 +248,10 @@ float4x4 CTF(float3 frg_position, float4 frg_normal, float4 frg_texcoord) {
 	Out[1].xyz = b;
 	Out[2] = frg_normal;
 	return Out;
+}
+
+float set(float A, float B) {
+    return lerp( 1, 1 + (A * 2) * 1 - B, (int)Zen_C );
 }
 
 #if Shader_Type == 0

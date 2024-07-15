@@ -58,9 +58,6 @@ vs_out vs_model (vs_in i)
   float4 r0,r1,r2,r3,r4,r5,r6,r7,r8;
   #include "Shader/Common.fxh"
   
- static float4 _MiddlePointPosition = float4(LightDirection.xyz*36.8, 1);
- 
-
   r0.xyz = mul( v0, (float3x3)unity_ObjectToWorld );
   r1.xyzw = mul( float4(r0.xyz, 1), unity_MatrixVP );
   r2.x = _ClipSpaceXOffset * r1.w;
@@ -80,22 +77,19 @@ vs_out vs_model (vs_in i)
   } else {
   }
     r2.xyz = float3(0, 0, 0);
-	
-	float3 head_right  = head_bone._11_12_13;
-    float3 head_foward = head_bone._31_32_33;
 
   r2.xyz = -_MiddlePointPosition.xyz + r2.xyz;
   r1.x = dot(r2.xyz, r2.xyz);
   r1.x = rsqrt(r1.x);
   r2.xyz = r2.xyz * r1.xxx;
-  r1.x = dot(-head_right, -head_right);
+  r1.x = dot(-Pivot_X, -Pivot_X);
   r1.x = max(1.17549435e-38, r1.x);
   r1.x = rsqrt(r1.x);
-  r3.xyz = -head_right * r1.xxx;
-  r1.x = dot(head_foward, head_foward);
+  r3.xyz = -Pivot_X * r1.xxx;
+  r1.x = dot(Pivot_Z, Pivot_Z);
   r1.x = max(1.17549435e-38, r1.x);
   r1.x = rsqrt(r1.x);
-  r1.xy = head_foward.xz * r1.xx;
+  r1.xy = Pivot_Z.xz * r1.xx;
   r2.w = dot(r3.xyz, r2.xyz);
   r2.w = 0.5 * abs(r2.w);
   r2.xz = r2.ww * r1.xy + r2.xz;
