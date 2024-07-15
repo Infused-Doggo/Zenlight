@@ -24,7 +24,7 @@ Zenlight it's a Zenless Zone Zero 'visual port' made for MikuMikuDance.
 
 # Requirements
 > - Python 3.10+
-> - Raw models with VColor and UV2
+> - 'UI' models with VColor and UV2
 
 # Credits
 - **Infu_D**: Project leader.
